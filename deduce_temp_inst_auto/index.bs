@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Placeholder Type Specifiers in Template Argument Lists
 H1: Placeholder Type Specifiers in Template Argument Lists
-Shortname: TBD
+Shortname: P0000
 Revision: 0
 Status: D
 Group: WG21
@@ -146,10 +146,16 @@ the type of `i` is the deduced type of the parameter `u` in the call `f1(std::ma
 ```
 template <class U> void f1(std::optional<U> u);
 ``` 
-Similarly, the type of `p` is the deduced type of the parameter `u` in the call `f2(std::pair{[] {}, 42})` of the following invented function template:
+One would imagine that the type of `p` is the deduced similarly, such that it should be the type of the parameter `u` in the call `f2(std::pair{[] {}, 42})` of the following invented function template:
 ```
 template <class U> void f2(std::pair<U, int> u);
 ```
+However, consider the following example:
+```
+template <class U> void f3(std::pair<U, unsigned> u);
+f3(std::pair{[] {}, 42});
+```
+This program is ill-formed. (why?)
 
 Note: applies regardless of storage class.
 
