@@ -1,6 +1,6 @@
 <pre class='metadata'>
-Title: Deducing Template Arguments with `auto`
-H1: Deducing Template Arguments with <code>`auto`</code>
+Title: Placeholder Type Specifiers in Template Argument Lists
+H1: Placeholder Type Specifiers in Template Argument Lists
 Shortname: TBD
 Revision: 0
 Status: D
@@ -19,54 +19,161 @@ Default Highlight: c++
 R0 November 2023: Initial version.
 
 # Introduction # {#intro}
-## Motivation ## {#motivation}
-This paper proposes using `auto` as placeholder type argument to template instantiation. 
-Library authors tend to like the parameters of many templates deduced. 
-Recent introduction of the pattern that uses parameter tagging to help with argument deduction and deduction guides.
+Placeholder type specifier (i.e. keyword `auto` and `decltype(auto)`) is considered one of the
+many important features of C++11. 
+Using `auto` in the right context make programs more consice. 
+This paper proposes using `auto` as placeholder type specifier in template argument lists. 
+The placeholder type is deduced following the same template argument deduction rules.  
+## Background ## {#background}
+This section describes a few existing places we use `auto` to elide usages of concrete type names or introducing parameters for function templates.
 
-Whether a template argument is more preferrable to be deduced than being specified explicitly is situational. 
-We believe that at the time of instantiation, the developer often has the best opportunities for judgement. 
-There's value to make template arguments deduced. 
-- Same reasons we declare variables with `auto`. 
-    + Reduce verbosity. 
-    + Sometimes the type is not ergonomic to type. 
-    + In the case of lambda, the type is unspecified. One can make an argument that it's possible to use  
-        `decltype()` on an auto deduced lambda type. But the ergonomics of `decltype()` itself can sometimes be a problem. 
+### Placeholder type specifiers in C++11
+Since C++11, we can already use `auto` as a placeholder type that will be deduced.
+```
+auto x1 = 1; // decltype(x1) is int
+```
+We often use `auto` for types that can not be otherwise specified.
+```
+auto fn = [] {}; // decltype(fn) is lambda
+```
+According to [dcl.type.auto.deduct] (3) The type of the variable is determined using the rules for template argument deduction.
 
-There's also undeniable value to make template argument explicit than deduced. 
-- Same reasons we sometimes don't declare variables with `auto`, even though the compiler **can** deduce it. 
-    + Developers prefer self documenting code. Code is read more often than written. 
-        Having explicit type arguments sometimes helps convey the author's intention.
-    + Typechecking helps to avoiding the case where the compiler would deduce a type that will be a surprise
-        to the developer. In the event of developer not making the right assumption, 
-        they would get compiler diagnostics instead of surprising behaviours. 
+### Abbreviated function templates in C++20
 
-## Scope ## {#scope}
-This proposal aims to make the core language more ergonomic while giving the user more control.
-This proposal does not make non-deducible arguments more deducible. 
-In the case that 
+Abbreviated function templates was introduced to C++20.  
+`auto` appearing in the abbreviated function templates are essentially introducing new template parameters. 
 
-## Existing Practices ## {#existing}
-Abbreviated function templates are already a thing.  
-Deduction of such abbreviated template arguments follows the same rule as `auto` on a local variable. 
-However, it's not working on cases like std::optional<auto>.
+```
+auto compose(auto f, auto g) {
+    return [=](auto v) {
+        return g(f(v));
+    };
+}
+```
+It's therefore legal to write:
+```
+int plus_one(int i) {
+    return i + 1;
+}
+
+int square(int i) {
+    return i * i;
+}
+
+int main() {
+    compose(plus_one, square)(3); // evaluates to 16
+}
+```
+Function template `compose` in this example is equivalent to 
+```
+template <typename F, typename G>
+auto compose(F f, G g) {
+    return [=](auto v) {
+        return g(f(v));
+    };
+}
+```
+
+<!-- However, it's not working on cases like std::optional<auto>.
 GCC has the ability to accept an abbreviated function template declariation with parameters that contain auto as a 
 template argument placeholder as part of support of Concepts TS.
-However, as of the time of writing, clang and MSVC still rejects. 
+However, as of the time of writing, clang and MSVC still rejects. -->
+
+## Reasons behind using `auto` in variable declarations
+Whether a type specifier is more preferrable to be deduced than specified explicitly is often situational. 
+At the time of the variable declaration, 
+the developer often has the best opportunities (and responsibility) for judgement 
+and decide on how they want the type specifier to look like. 
+
+1. There's value to make variable types deduced:
+    + It reduces verbosity and promotes readability when explicitly specified type does not add more value for reading.
+    + In the case of lambda, the type is unspecified. One can make an argument that it's possible to use  
+        `decltype()` on an auto deduced lambda type. But the ergonomics of `decltype()` itself can sometimes be a problem.
+
+2. There's also undeniable value to make template argument explicit rather than deduced, even if it doesn't change the semantic meaning of the program.
+    + Many programers prefer their code to be self documenting. Code is read more often than written. Having explicit type arguments sometimes helps convey the author's intention.
+    + Humans make mistakes when writing programs and many errors are caught with typechecking. In the case of explicitly specifying the type, one may avoid the case where the compiler would deduce an unexpected type. In the event of developer not making the right assumption, they would get compiler diagnostics instead of surprising behaviours. 
+
+## Motivation ## {#motivation}
+
+Using `auto` in variable declarations is great. However, the standard only permits use of such placeholder type specifiers in contexts explicitly allowed in [dcl.spec.auto]. 
+This made usages of `auto` in template argument lists ill-formed.
+
+Briefly speaking, this proposal would like to make the following variable declaration valid:
+
+```
+std::optional<auto> i = std::make_optional(5);
+std::pair<auto, int> p{[] {}, 42};
+```
+Meanwhile, Concepts TS already introduced such capabilities [citation needed] and this proposal intends to unify the syntax.
+
+### What problem does this proposal solve?
+
+Library authors tend to like the parameters of many templates deduced. 
+CTAD from C++17 and deduction guides further made more template arguments deducible. 
+
+Whether a template argument is more preferrable to be deduced than being specified explicitly is often situational.
+We believe that at the time of instantiation, the developer often has the best opportunities for judgement for how they want the type specifier to look like.
+
+1. There's value to make template arguments deduced. 
+    - Same reasons we declare variables with `auto`. 
+        + Reduce verbosity. 
+        + Sometimes the type is not ergonomic to type. 
+        + In the case of lambda, the type is unspecified. One can make an argument that it's possible to use  
+            `decltype()` on an auto deduced lambda type. But the ergonomics of `decltype()` itself can sometimes be a problem. 
+
+2. There's also undeniable value to make template argument explicit rather than deduced. 
+    - Same reasons we sometimes don't declare variables with `auto`, even though the compiler **can** deduce it. 
+        + Developers prefer self documenting code. Code is read more often than written. 
+            Having explicit type arguments sometimes helps convey the author's intention.
+        + Typechecking helps to avoiding the case where the compiler would deduce a type that will be a surprise to the developer. In the event of developer not making the right assumption, they would get compiler diagnostics instead of surprising behaviours. 
 
 The intention of this paper is to make the experience coherent. 
 Whenever you have an abbreviated function template with an auto. 
 
-# Design # {#design}
-## Variable Declariation Syntax
+## Scope ## {#scope}
+This proposal aims to make the core language more ergonomic while giving the user more control.
+It does not make arguments more deducible when it would fail otherwise. 
+
+# Proposed Semantics # {#semantics}
+## Placeholder type in variable declaration
+Using the example above,
+```
+std::optional<auto> i = std::make_optional(5);
+std::pair<auto, int> p{[] {}, 42};
+```
+the type of `i` is the deduced type of the parameter `u` in the call `f1(std::make_optional(5))` of the following invented function template:
+```
+template <class U> void f1(std::optional<U> u);
+``` 
+Similarly, the type of `p` is the deduced type of the parameter `u` in the call `f2(std::pair{[] {}, 42})` of the following invented function template:
+```
+template <class U> void f2(std::pair<U, int> u);
+```
+
+Note: applies regardless of storage class.
+
+## TODO: Extension to the abbreviated function templates
+
+## TODO: explore whether placeholder type specifier in trailing return type make sense
+
 ```
 std::unordered_map<std::string, auto> my_map {{}}
 ```
 
-## Impact on Deduction Guides
-Already possible to have `Type<A, B, auto>`, what happens if you do `Type<A, auto, B>` ?
-
 # Proposed Wording # {#wording}
-[decl.spec.auto] 
+TODO: find the relevant wording.
+
+[dcl.spec.auto.general]
+
+[dcl.type.auto.deduct]
+determined using the rules for template argument deduction
+
+9.2.9.6.1 (5)
+
+A placeholder type can also be used in the templac
 
 # References # {#ref}
+TODO: references
+
+- [n4964] Working Draft, Programming Languages -- C++ 
