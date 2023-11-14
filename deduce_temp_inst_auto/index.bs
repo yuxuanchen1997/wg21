@@ -97,7 +97,7 @@ and decide on how they want the type specifier to look like.
         `decltype()` on an auto deduced lambda type, but the ergonomics of `decltype()` itself can sometimes be a problem.
 
 2. There's also undeniable value to make template argument explicit rather than deduced, even if it doesn't change the semantic meaning of the program.
-    + Many programers prefer their code to be self documenting. Code is read more often than written. Having explicit type arguments sometimes helps convey the author's intention.
+    + One will end up with more expressive programs. Many programers prefer their code to be self documenting. Code is read more often than written. Having explicit type arguments sometimes helps convey the author's intention.
     + Humans make mistakes when writing programs and many errors are caught with typechecking. In the case of explicitly specifying the type, one may avoid the case where the compiler would deduce an unexpected type. In the event of developer not making the right assumption, they would get compiler diagnostics instead of surprising behaviours. 
 
 ## Motivation ## {#motivation}
@@ -119,7 +119,7 @@ Library authors tend to like the parameters of many templates deduced.
 CTAD from C++17 and deduction guides further made more template arguments deducible. 
 
 As discussed previously, there are justifications to make a template argument either deduced or specified. 
-The intention of this paper is to make the experience coherent and give power to the developer to make the judgement. 
+The intention of this paper is to make the experience coherent and give the expressive power to the developer to make the judgement. 
 
 ## Scope ## {#scope}
 This proposal aims to make the core language more ergonomic while giving the user more control.
