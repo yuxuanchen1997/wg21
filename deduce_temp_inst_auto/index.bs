@@ -22,8 +22,7 @@ R0 November 2023: Initial version.
 Placeholder type specifier (i.e. keyword `auto` and `decltype(auto)`) is considered one of the
 many important features of C++11. 
 Using `auto` in the right context make programs more consice. 
-This paper proposes using `auto` as placeholder type specifier in template argument lists. 
-The placeholder type is deduced following the same template argument deduction rules.  
+This paper proposes using `auto` as placeholder type specifier in template argument lists in various contexts for better expressiveness. 
 
 This paper also discusses the known limitations of such approach and how a potentially different logic of partial substitution may help with deduction. 
 
