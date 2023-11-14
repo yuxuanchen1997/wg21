@@ -182,7 +182,12 @@ Deduction for `U` in function template `f3` here will fail.
 
 Following the same logic, simply copying the logic of `f3`'s function template argument deduction for a declaration will make declarations like `std::pair<auto, unsigned> p{[] {}, 42}` ill-formed. 
 
+## Options 
+### Ill-formed Implicit conversions
 TODO: to fix this, one might expect deduction to work after partial substitution of templates?
+
+### Deduce after partial substitution
+TODO:
 
 # Proposed Wording # {#wording}
 TODO: find the relevant wording.
