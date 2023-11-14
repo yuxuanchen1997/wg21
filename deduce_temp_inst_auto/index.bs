@@ -79,11 +79,11 @@ void foo() {
 ```
 
 Such abbreviation only allowed `auto` to appear as complete type specifiers. 
+One cannot write such template that takes `std::optional<auto>` and expect the `auto` to work similarly,
+because template argument lists do not take placeholder type specifiers. 
 
-<!-- However, it's not working on cases like std::optional<auto>.
-GCC has the ability to accept an abbreviated function template declariation with parameters that contain auto as a 
-template argument placeholder as part of support of Concepts TS.
-However, as of the time of writing, clang and MSVC still rejects. -->
+GCC has an extension to accept this abbreviated function template with `auto` being a parameter under `-fconcepts-ts`. 
+However, as of the time of writing, clang and MSVC still rejects programs like this.
 
 ## Reasons behind using `auto` in variable declarations
 Whether a type specifier is more preferrable to be deduced than specified explicitly is often situational. 
@@ -142,7 +142,7 @@ template <class U> void f2(std::pair<U, int> u);
 ```
 Note: applies regardless of storage class.
 
-## Extension to the abbreviated function templates
+## Template type argument in abbreviated function templates
 
 GCC already supports this with `-fconcepts-ts` flag. 
 This proposal would like to make the following abbreviated function template 
@@ -155,8 +155,10 @@ template <typename _T>
 void foo(std::pair<_T, int> p) {}
 ```
 
-## Extension to trailing return types
+## Instantiating function templates
+TODO: Does it make sense?
 
+## Extension to trailing return types
 TODO: Does it actually make sense?
 ```
 auto foo(auto f, auto g) -> std::pair<auto, int> {}
@@ -180,6 +182,8 @@ This program is ill-formed, because `std::pair{[] {}, 42}` is deduced to `std::p
 Deduction for `U` in function template `f3` here will fail. 
 
 Following the same logic, simply copying the logic of `f3`'s function template argument deduction for a declaration will make declarations like `std::pair<auto, unsigned> p{[] {}, 42}` ill-formed. 
+
+TODO: to fix this, one might expect deduction to work after partial substitution of templates?
 
 # Proposed Wording # {#wording}
 TODO: find the relevant wording.
