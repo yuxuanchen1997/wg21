@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Placeholder Type Specifiers in Template Argument Lists
 H1: Placeholder Type Specifiers in Template Argument Lists
-Shortname: P0000
+Shortname: PAPER_NUMBER
 Revision: 0
 Status: D
 Group: WG21
@@ -156,10 +156,10 @@ void foo(std::pair<_T, int> p) {}
 ```
 
 ## Instantiating function templates
-TODO: Does it make sense?
+TODO
 
 ## Extension to trailing return types
-TODO: Does it actually make sense?
+TODO
 ```
 auto foo(auto f, auto g) -> std::pair<auto, int> {}
 ```
