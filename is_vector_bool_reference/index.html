@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
   <link href="https://wg21.link/tbd" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="89a53df769a5271f0c3e92d44a463b4728eba89e" name="revision">
+  <meta content="5593de89568413f32195b069e6c8a0ec3141f7a8" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2112,8 +2112,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li>
      <a href="#intro"><span class="secno">2</span> <span class="content">Introduction</span></a>
      <ol class="toc">
-      <li><a href="#motivation"><span class="secno">2.1</span> <span class="content">Motivation ##</span></a>
-      <li><a href="#existing-practices"><span class="secno">2.2</span> <span class="content">Existing Practices ##</span></a>
+      <li><a href="#motivation"><span class="secno">2.1</span> <span class="content">Motivation</span></a>
+      <li><a href="#existing"><span class="secno">2.2</span> <span class="content">Existing Practices</span></a>
       <li><a href="#proposed-solution-a-type-trait"><span class="secno">2.3</span> <span class="content">Proposed Solution: A Type Trait</span></a>
      </ol>
     <li><a href="#or-should-we-change-template-argument-deduction-instead"><span class="secno">3</span> <span class="content">Or Should We Change Template Argument Deduction Instead?</span></a>
@@ -2126,7 +2126,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p>R0: Initial version</p>
    <h2 class="heading settled" data-level="2" id="intro"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
     This paper proposes to add a new type trait <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> that exposes the previously exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> in [vector.bool.pspc]/8 to <code class="highlight"><c- o>&lt;</c-><c- n>type_traits</c-><c- o>></c-></code>. The trait <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>value</c-></code> evaluates to true if and only if <code class="highlight"><c- n>T</c-></code> denotes the type <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-></code> for some type <code class="highlight"><c- n>Alloc</c-></code> and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c-></code> is not a program-defined specialization. 
-   <h3 class="heading settled" data-level="2.1" id="motivation"><span class="secno">2.1. </span><span class="content">Motivation ##</span><a class="self-link" href="#motivation"></a></h3>
+   <h3 class="heading settled" data-level="2.1" id="motivation"><span class="secno">2.1. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h3>
     This new trait is intended to help code like this 
 <pre class="language-cpp highlight"><c- c1>// Illustration only, library may contain many overloads for `read`</c->
 <c- b>void</c-> <c- nf>read</c-><c- p>(</c-><c- b>bool</c-><c- o>&amp;</c-> <c- n>b</c-><c- p>);</c->
@@ -2149,7 +2149,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 <c- b>void</c-> <c- n>read</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-> <c- n>b</c-><c- p>);</c->
 </pre>
    <p>However, compilers can’t deduce <code class="highlight"><c- n>Alloc</c-></code> here because it has no way to figure out which <code class="highlight"><c- n>vector</c-></code> a <code class="highlight"><c- n>__bit_reference</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>></c-></code> has come from. It’s impractical for any user of this function to provide the allocator type either. This solution is still not ideal.</p>
-   <h3 class="heading settled" data-level="2.2" id="existing-practices"><span class="secno">2.2. </span><span class="content">Existing Practices ##</span><a class="self-link" href="#existing-practices"></a></h3>
+   <h3 class="heading settled" data-level="2.2" id="existing"><span class="secno">2.2. </span><span class="content">Existing Practices</span><a class="self-link" href="#existing"></a></h3>
    <p>This is not the first time anyone has run into this problem. In fact, the [vector.bool.pspc]/8 states that there’s an exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> that is true if T denotes the type <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-></code> for some type <code class="highlight"><c- n>Alloc</c-></code> and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c-></code> is not a program-defined specialization. The only use of the constant is formatter in [vector.bool.fmt].</p>
    <p>libc++ implements the exposition-only constant through a check <a href="https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28">here</a>.</p>
    <h3 class="heading settled" data-level="2.3" id="proposed-solution-a-type-trait"><span class="secno">2.3. </span><span class="content">Proposed Solution: A Type Trait</span><a class="self-link" href="#proposed-solution-a-type-trait"></a></h3>
