@@ -20,8 +20,10 @@ Default Highlight: c++
 R0: Initial version
 
 # Introduction # {#intro}
+This paper proposes to add a new type trait `std::is_vector_bool_reference<T>` that exposes the previously exposition-only constant `is-vector-bool-reference` in [vector.bool.pspc]/8 to `<type_traits>`. The trait `std::is_vector_bool_reference<T>::value` evaluates to true if and only if `T` denotes the type `vector<bool, Alloc>::reference` for some type `Alloc` and `vector<bool, Alloc>` is not a program-defined specialization.
 
-This paper proposes a new type trait `std::is_vector_bool_reference<T>`. This is intended to help code like this
+## Motivation ##
+This new trait is intended to help code like this
 
 ```cpp
 // Illustration only, library may contain many overloads for `read`
@@ -38,31 +40,36 @@ One who writes this code (who may be working with a serialization library like A
 void read(std::_Bit_reference b);
 ``` 
 
-However, anyone who has a good understanding of how standard C++ is different from GNU C++ will know that this code is not portable. Instead, it's dependent on libstdc++'s implementation details. 
+However, this code isn't portable due to its dependency on libstdc++'s implementation details. This unfortunately occurs a lot in a massive code base that previously used libstdc++.
 
-Another attempt to write this would look something like:
+Another attempt to write this in standard C++ would look something like:
 
 ```cpp
 void read(std::vector<bool>::reference b);
 ```
 
-This works fine for most cases and seemingly solved the problem with standard C++. However, if you ever have a `std::vector<bool, MyAllocator>` you will soon figure out that this doesn't work either, at least sometimes. That is because `std::vector<bool, MyAllocator>::reference` and `std::vector<bool>::reference` may be different types. In fact, they are the same type in libstdc++, which is just `std::_Bit_reference` defined [here](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/stl_bvector.h#L764). While in libc++ and MSVC STL, this is defined as a template with the vector type as a parameter. 
+This works fine for most cases and seemingly solved the problem with standard C++, until your function `read` runs into a reference to a `std::vector<bool, MyAllocator>` with a custom allocator.
 
-A naive thought would be to make the allocator type in the vector parameterized, 
+This approach sometimes doesn't work. That is because `std::vector<bool, MyAllocator>::reference` and `std::vector<bool>::reference` may or may not be the same type. In fact, they are the same type in libstdc++, which is just `std::_Bit_reference` defined [here](https://github.com/gcc-mirror/gcc/blob/master/libstdc%2B%2B-v3/include/bits/stl_bvector.h#L764). While in libc++ and MSVC STL, this is defined as a template whose argument may contain the vector type.
 
-```
+When someone runs into such an error, an intuitive but naive thought would be to make the allocator type in the vector parameterized.
+
+```cpp
 template <typename Alloc>
 void read(std::vector<bool, Alloc>::reference b);
 ```
-
-However, compilers can't deduce `Alloc` because it has no way to figure out which `vector` a `__bit_reference<vector<bool, Alloc>>` has come from. This solution is still not ideal.
-
-This is not the first time anyone has run into this problem. In fact, the [vector.bool.pspc]/8 states that there's an exposition-only constant `is-vector-bool-reference` that is true if T denotes the type `vector<bool, Alloc>​::​reference` for some type `Alloc` and `vector<bool, Alloc>` is not a program-defined specialization. The only use of the constant is formatter in [vector.bool.fmt]. 
+However, compilers can't deduce `Alloc` here because it has no way to figure out which `vector` a `__bit_reference<vector<bool, Alloc>>` has come from. It's impractical for any user of this function to provide the allocator type either. This solution is still not ideal.
 
 
-# A new type trait
+## Existing Practices ##
 
-This paper is to propose that we just provide this as a type trait in standard C++.
+This is not the first time anyone has run into this problem. In fact, the [vector.bool.pspc]/8 states that there's an exposition-only constant `is-vector-bool-reference` that is true if T denotes the type `vector<bool, Alloc>::reference` for some type `Alloc` and `vector<bool, Alloc>` is not a program-defined specialization. The only use of the constant is formatter in [vector.bool.fmt]. 
+
+libc++ implements the exposition-only constant through a check [here](https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28).
+
+## Proposed Solution: A Type Trait
+
+This paper is to propose that we just provide this as a type trait in standard C++ along the lines of:
 
 ```
 template <typename T>
@@ -71,9 +78,11 @@ constexpr bool is_vector_bool_reference_v = /* ... */
 template <class T> struct is_vector_bool_reference;
 ```
 
-This [link](https://godbolt.org/z/e5dYjdnKM) to compiler explorer provides some implementation experience for libstdc++, libc++, and MSVC STL. The implementation should be straightforward.
+This [link](https://godbolt.org/z/e5dYjdnKM) to compiler explorer provides some implementation experience for libstdc++, libc++, and MSVC STL. The implementation is straightforward.
 
-Please note that `libc++` [implements](https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28) a definition for <code><em>is-vector-bool-reference</em></code> that also covers its standard noncompliant `__bit_const_reference` in ABIv1. Since this is already non-standard, whether it should return true for `__bit_const_reference` is left to the implementors to decide. Since `libc++` also shares the bit reference definition with `std::bitset<N>::reference` , inclusion of forward declaration of vector here is required, but otherwise it's the same.
+Since `libc++` also shares the bit reference definition with `std::bitset<N>::reference`, inclusion of forward declaration of vector here is required, but otherwise it's the same.
+
+Please note that `libc++`'s' [definition](https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28) for `is-vector-bool-reference` also covers its standard noncompliant `__bit_const_reference` with `_LIBCPP_ABI_VERSION == 1`. Since this is already non-standard, whether it should return true for `__bit_const_reference` is left to libc++ maintainers to decide. It's not an issue for the motivating example, due to the expectation of a const ref would allow the `__bit_const_reference` to be converted to a bool.
 
 With such a type trait, we can define the overload in the form of 
 
@@ -82,16 +91,20 @@ template <typename BitReference>
     requires std::is_vector_bool_reference_v<BitReference>
 void read(BitReference b);
 ```
+And this works as expected.
 
-# Are there alternatives?
+# Or Should We Change Template Argument Deduction Instead?
 
-An alternative would be introducing some core language change to make deducing the `Alloc` parameter for the function template `template <typename Alloc> void read(std::vector<bool, Alloc>::reference b);` possible. However, this requires looking at all partial specializations of the class template, finding the dependent member, removing the specialization where this name doesn't exist or is not a type, then deduce the template parameter `Alloc` for the class based on the knowledge you have with the incoming type. Even then, deducing `Alloc` may still fail because some implementations of the `_Bit_reference` don't depend on `Alloc`. This approach does not immediately seem feasible. The library solution proposed in this paper should be the better solution.
-
+An alternative would be introducing some core language change to make deducing the `Alloc` parameter for the function template
+```
+template <typename Alloc>
+void read(std::vector<bool, Alloc>::reference b);
+```
+possible. However, this requires looking at all partial specializations of the class template, finding the dependent member, removing the specialization where this name doesn't exist or is not a type, then deduce the template parameter `Alloc` for the class based on the knowledge you have with the incoming type. Even then, deducing `Alloc` may still fail because some implementations of the `_Bit_reference` don't depend on `Alloc`. This approach does not immediately seem feasible. The library solution proposed in this paper should be the better solution.
 
 # Impact on the standard
 
 This paper proposes a library only change that shouldn't impact the core language. Since the standard already depends on the exposition-only constant `is-vector-bool-reference` we can make the formatter use this type trait to constrain the template specialization instead. 
-
 
 # Proposed Wording Changes # {#wording}
 
