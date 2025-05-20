@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D9999R0R0: std::is_vector_bool_reference&lt;T></title>
+  <title>D9999R0: std::is_vector_bool_reference&lt;T></title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
   <link href="https://wg21.link/tbd" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="70f523f86f091dbb6f0f0c8e41f49d43258eac93" name="revision">
+  <meta content="80d258c72fdf70775a276f0017c7ad10d4fcd679" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2088,7 +2088,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D9999R0R0<br><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code></h1>
+   <h1 class="p-name no-ref" id="title">D9999R0<br><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code></h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2025-05-20">2025-05-20</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -2141,7 +2141,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 <c- b>void</c-> <c- n>read</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-> <c- n>b</c-><c- p>);</c->
 </pre>
    <p>However, compilers can’t deduce <code class="highlight"><c- n>Alloc</c-></code> because it has no way to figure out which <code class="highlight"><c- n>vector</c-></code> a <code class="highlight"><c- n>__bit_reference</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>></c-></code> has come from. This solution is still not ideal.</p>
-   <p>This is not the first time anyone has run into this problem. In fact, the [vector.bool.pspc]/8 states that there’s an exposition-only constant <code class="highlight"><em><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></em></code> that is true if T denotes the type <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c->​<c- o>::</c->​<c- n>reference</c-></code> for some type <code class="highlight"><c- n>Alloc</c-></code> and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c-></code> is not a program-defined specialization. The only use of the constant is formatter in [vector.bool.fmt].</p>
+   <p>This is not the first time anyone has run into this problem. In fact, the [vector.bool.pspc]/8 states that there’s an exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> that is true if T denotes the type <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c->​<c- o>::</c->​<c- n>reference</c-></code> for some type <code class="highlight"><c- n>Alloc</c-></code> and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c-></code> is not a program-defined specialization. The only use of the constant is formatter in [vector.bool.fmt].</p>
    <h2 class="heading settled" data-level="3" id="a-new-type-trait"><span class="secno">3. </span><span class="content">A new type trait</span><a class="self-link" href="#a-new-type-trait"></a></h2>
    <p>This paper is to propose that we just provide this as a type trait in standard C++.</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>T</c-><c- o>></c->
