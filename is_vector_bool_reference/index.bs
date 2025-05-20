@@ -22,7 +22,7 @@ R0: Initial version
 # Introduction # {#intro}
 This paper proposes to add a new type trait `std::is_vector_bool_reference<T>` that exposes the previously exposition-only constant `is-vector-bool-reference` in [vector.bool.pspc]/8 to `<type_traits>`. The trait `std::is_vector_bool_reference<T>::value` evaluates to true if and only if `T` denotes the type `vector<bool, Alloc>::reference` for some type `Alloc` and `vector<bool, Alloc>` is not a program-defined specialization.
 
-## Motivation ##
+## Motivation ## {#motivation}
 This new trait is intended to help code like this
 
 ```cpp
@@ -61,7 +61,7 @@ void read(std::vector<bool, Alloc>::reference b);
 However, compilers can't deduce `Alloc` here because it has no way to figure out which `vector` a `__bit_reference<vector<bool, Alloc>>` has come from. It's impractical for any user of this function to provide the allocator type either. This solution is still not ideal.
 
 
-## Existing Practices ##
+## Existing Practices ## {#existing}
 
 This is not the first time anyone has run into this problem. In fact, the [vector.bool.pspc]/8 states that there's an exposition-only constant `is-vector-bool-reference` that is true if T denotes the type `vector<bool, Alloc>::reference` for some type `Alloc` and `vector<bool, Alloc>` is not a program-defined specialization. The only use of the constant is formatter in [vector.bool.fmt]. 
 
