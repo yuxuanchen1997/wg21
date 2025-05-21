@@ -1,13 +1,13 @@
 <pre class='metadata'>
 Title: `std::is_vector_bool_reference<T>`
 H1: `std::is_vector_bool_reference<T>`
-Shortname: D9999
+Shortname: P3719
 Revision: 0
-Status: D
+Status: P 
 Group: WG21
-Audience: LEWG
+Audience: LEWG, LEWGI
 Editor: Yuxuan Chen, i@yuxuan.ch
-URL: https://wg21.link/tbd
+URL: https://wg21.link/p3719r0
 Markup Shorthands: markdown yes
 Toggle Diffs: no
 No Abstract: yes
