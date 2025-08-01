@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
   <link href="https://wg21.link/p3719r1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d5ebc09e4f2d1d7d43bfdef24bd7093fa93381e2" name="revision">
+  <meta content="5d7e120390a03de312e72133f4bd70763a93f1da" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2114,13 +2114,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <ol class="toc">
       <li><a href="#motivation"><span class="secno">2.1</span> <span class="content">Motivation</span></a>
       <li><a href="#existing"><span class="secno">2.2</span> <span class="content">Existing Practices</span></a>
-      <li><a href="#proposed-solution-a-type-trait"><span class="secno">2.3</span> <span class="content">Proposed Solution: A Type Trait</span></a>
-      <li><a href="#concept"><span class="secno">2.4</span> <span class="content">Accompanying Standard Library Concept</span></a>
-      <li><a href="#impl"><span class="secno">2.5</span> <span class="content">Implementation Experience</span></a>
      </ol>
-    <li><a href="#or-should-we-change-template-argument-deduction-instead"><span class="secno">3</span> <span class="content">Or Should We Change Template Argument Deduction Instead?</span></a>
-    <li><a href="#impact-on-the-standard"><span class="secno">4</span> <span class="content">Impact on the standard</span></a>
-    <li><a href="#wording"><span class="secno">5</span> <span class="content">Proposed Wording Changes</span></a>
+    <li>
+     <a href="#solution"><span class="secno">3</span> <span class="content">Proposed Solution: A Type Trait</span></a>
+     <ol class="toc">
+      <li><a href="#concept"><span class="secno">3.1</span> <span class="content">Accompanying Standard Library Concept</span></a>
+     </ol>
+    <li><a href="#impl"><span class="secno">4</span> <span class="content">Implementation Experience</span></a>
+    <li><a href="#alternatives-change-template-argument-deduction-instead"><span class="secno">5</span> <span class="content">Alternatives: Change Template Argument Deduction Instead?</span></a>
+    <li><a href="#impact-on-the-standard"><span class="secno">6</span> <span class="content">Impact on the standard</span></a>
+    <li><a href="#wording"><span class="secno">7</span> <span class="content">Proposed Wording Changes</span></a>
    </ol>
   </nav>
   <main>
@@ -2155,23 +2158,20 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h3 class="heading settled" data-level="2.2" id="existing"><span class="secno">2.2. </span><span class="content">Existing Practices</span><a class="self-link" href="#existing"></a></h3>
    <p>This is not the first time anyone has run into this problem. In fact, the [vector.bool.pspc]/8 states that there’s an exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> that is true if T denotes the type <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-></code> for some type <code class="highlight"><c- n>Alloc</c-></code> and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c-></code> is not a program-defined specialization. The only use of the constant is formatter in [vector.bool.fmt].</p>
    <p>libc++ implements the exposition-only constant through a check <a href="https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28">here</a>.</p>
-   <h3 class="heading settled" data-level="2.3" id="proposed-solution-a-type-trait"><span class="secno">2.3. </span><span class="content">Proposed Solution: A Type Trait</span><a class="self-link" href="#proposed-solution-a-type-trait"></a></h3>
+   <h2 class="heading settled" data-level="3" id="solution"><span class="secno">3. </span><span class="content">Proposed Solution: A Type Trait</span><a class="self-link" href="#solution"></a></h2>
    <p>This paper is to propose that we just provide this as a type trait in standard C++ along the lines of:</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>T</c-><c- o>></c->
 <c- k>constexpr</c-> <c- b>bool</c-> <c- n>is_vector_bool_reference_v</c-> <c- o>=</c-> <c- d>/* ... */</c->
 
 <c- k>template</c-> <c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>struct</c-> <c- nc>is_vector_bool_reference</c-><c- p>;</c->
 </pre>
-   <p>This <a href="https://godbolt.org/z/e5dYjdnKM">link</a> to compiler explorer provides some implementation experience for libstdc++, libc++, and MSVC STL. The implementation is straightforward.</p>
-   <p>Since <code class="highlight"><c- n>libc</c-><c- o>++</c-></code> also shares the bit reference definition with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>>::</c-><c- n>reference</c-></code>, inclusion of forward declaration of vector here is required, but otherwise it’s the same.</p>
-   <p>Please note that <code class="highlight"><c- n>libc</c-><c- o>++</c-></code><a class="property css" data-link-type="property">s</a> <a href="https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28">definition</a> for <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> also covers its standard noncompliant <code class="highlight"><c- n>__bit_const_reference</c-></code> with <code class="highlight"><c- n>_LIBCPP_ABI_VERSION</c-> <c- o>==</c-> <c- mi>1</c-></code>. Since this is already non-standard, whether it should return true for <code class="highlight"><c- n>__bit_const_reference</c-></code> is left to libc++ maintainers to decide. It’s not an issue for the motivating example, due to the expectation of a const ref would allow the <code class="highlight"><c- n>__bit_const_reference</c-></code> to be converted to a bool.</p>
    <p>With such a type trait, we can declare the overload in the form of</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>BitReference</c-><c- o>></c->
     <c- k>requires</c-> <c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference_v</c-><c- o>&lt;</c-><c- n>BitReference</c-><c- o>></c->
 <c- b>void</c-> <c- n>read</c-><c- p>(</c-><c- n>BitReference</c-> <c- n>b</c-><c- p>);</c->
 </pre>
    <p>And this works as expected.</p>
-   <h3 class="heading settled" data-level="2.4" id="concept"><span class="secno">2.4. </span><span class="content">Accompanying Standard Library Concept</span><a class="self-link" href="#concept"></a></h3>
+   <h3 class="heading settled" data-level="3.1" id="concept"><span class="secno">3.1. </span><span class="content">Accompanying Standard Library Concept</span><a class="self-link" href="#concept"></a></h3>
    <p>With C++20 style concepts, we can define a standard library concept like the follows:</p>
 <pre class="language-cpp highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
 <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>T</c-><c- o>></c->
@@ -2183,17 +2183,20 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <c- n>b</c-> <c- o>=</c-> true<c- p>;</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="2.5" id="impl"><span class="secno">2.5. </span><span class="content">Implementation Experience</span><a class="self-link" href="#impl"></a></h3>
-    We have provided implementation of <code class="highlight"><c- n>is_vector_bool_reference_v</c-></code> and concept <code class="highlight"><c- n>vector_bool_reference</c-></code> for libstdc++, libc++, and MSVC STL in <a href="https://github.com/facebook/folly/blob/fc5e5b0b635e59366521d8ac5ca7c0d58f89e0bd/folly/lang/VectorTraits.h#L26">the folly library</a>. In GNU libstdc++, a simple type comparison can be used. While in the other two libraries where this is a template, we can implement it with a variable template partial specialization. 
-   <h2 class="heading settled" data-level="3" id="or-should-we-change-template-argument-deduction-instead"><span class="secno">3. </span><span class="content">Or Should We Change Template Argument Deduction Instead?</span><a class="self-link" href="#or-should-we-change-template-argument-deduction-instead"></a></h2>
+   <h2 class="heading settled" data-level="4" id="impl"><span class="secno">4. </span><span class="content">Implementation Experience</span><a class="self-link" href="#impl"></a></h2>
+    This <a href="https://godbolt.org/z/e5dYjdnKM">link</a> to compiler explorer provides some implementation experience for libstdc++, libc++, and MSVC STL. The implementation is straightforward. 
+   <p>Since <code class="highlight"><c- n>libc</c-><c- o>++</c-></code> also shares the bit reference definition with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>>::</c-><c- n>reference</c-></code>, inclusion of forward declaration of vector here is required, but otherwise it’s the same.</p>
+   <p>Please note that <code class="highlight"><c- n>libc</c-><c- o>++</c-></code><a class="property css" data-link-type="property">s</a> <a href="https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28">definition</a> for <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> also covers its standard noncompliant <code class="highlight"><c- n>__bit_const_reference</c-></code> with <code class="highlight"><c- n>_LIBCPP_ABI_VERSION</c-> <c- o>==</c-> <c- mi>1</c-></code>. Since this is already non-standard, whether it should return true for <code class="highlight"><c- n>__bit_const_reference</c-></code> is left to libc++ maintainers to decide. It’s not an issue for the motivating example, due to the expectation of a const ref would allow the <code class="highlight"><c- n>__bit_const_reference</c-></code> to be converted to a bool.</p>
+   <p>We have also implemented <code class="highlight"><c- n>is_vector_bool_reference_v</c-></code> and concept <code class="highlight"><c- n>vector_bool_reference</c-></code> for libstdc++, libc++, and MSVC STL in <a href="https://github.com/facebook/folly/blob/fc5e5b0b635e59366521d8ac5ca7c0d58f89e0bd/folly/lang/VectorTraits.h#L26">the folly library</a>.</p>
+   <h2 class="heading settled" data-level="5" id="alternatives-change-template-argument-deduction-instead"><span class="secno">5. </span><span class="content">Alternatives: Change Template Argument Deduction Instead?</span><a class="self-link" href="#alternatives-change-template-argument-deduction-instead"></a></h2>
    <p>An alternative would be introducing some core language change to make deducing the <code class="highlight"><c- n>Alloc</c-></code> parameter for the function template</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>Alloc</c-><c- o>></c->
 <c- b>void</c-> <c- n>read</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-> <c- n>b</c-><c- p>);</c->
 </pre>
    <p>possible. However, this requires looking at all partial specializations of the class template, finding the dependent member, removing the specialization where this name doesn’t exist or is not a type, then deduce the template parameter <code class="highlight"><c- n>Alloc</c-></code> for the class based on the knowledge you have with the incoming type. Even then, deducing <code class="highlight"><c- n>Alloc</c-></code> may still fail because some implementations of the <code class="highlight"><c- n>_Bit_reference</c-></code> don’t depend on <code class="highlight"><c- n>Alloc</c-></code>. This approach does not immediately seem feasible. The library solution proposed in this paper should be the better solution.</p>
-   <h2 class="heading settled" data-level="4" id="impact-on-the-standard"><span class="secno">4. </span><span class="content">Impact on the standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
+   <h2 class="heading settled" data-level="6" id="impact-on-the-standard"><span class="secno">6. </span><span class="content">Impact on the standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
    <p>This paper proposes a library only change that shouldn’t impact the core language. Since the standard already depends on the exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> we can make the formatter use this type trait to constrain the template specialization instead.</p>
-   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Proposed Wording Changes</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Proposed Wording Changes</span><a class="self-link" href="#wording"></a></h2>
    <p>Edit [<strong>meta.type.synop</strong>] as follows:</p>
    <blockquote>
 <pre class="highlight"><code><c- c1>// [meta.unary.prop], type properties</c->

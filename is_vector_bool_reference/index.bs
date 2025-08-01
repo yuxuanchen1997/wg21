@@ -69,7 +69,7 @@ This is not the first time anyone has run into this problem. In fact, the [vecto
 
 libc++ implements the exposition-only constant through a check [here](https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28).
 
-## Proposed Solution: A Type Trait
+# Proposed Solution: A Type Trait # {#solution}
 
 This paper is to propose that we just provide this as a type trait in standard C++ along the lines of:
 
@@ -79,12 +79,6 @@ constexpr bool is_vector_bool_reference_v = /* ... */
 
 template <class T> struct is_vector_bool_reference;
 ```
-
-This [link](https://godbolt.org/z/e5dYjdnKM) to compiler explorer provides some implementation experience for libstdc++, libc++, and MSVC STL. The implementation is straightforward.
-
-Since `libc++` also shares the bit reference definition with `std::bitset<N>::reference`, inclusion of forward declaration of vector here is required, but otherwise it's the same.
-
-Please note that `libc++`'s' [definition](https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28) for `is-vector-bool-reference` also covers its standard noncompliant `__bit_const_reference` with `_LIBCPP_ABI_VERSION == 1`. Since this is already non-standard, whether it should return true for `__bit_const_reference` is left to libc++ maintainers to decide. It's not an issue for the motivating example, due to the expectation of a const ref would allow the `__bit_const_reference` to be converted to a bool.
 
 With such a type trait, we can declare the overload in the form of
 
@@ -113,10 +107,16 @@ void read(std::vector_bool_reference auto b) {
 }
 ```
 
-## Implementation Experience ## {#impl}
-We have provided implementation of `is_vector_bool_reference_v` and concept `vector_bool_reference` for libstdc++, libc++, and MSVC STL in [the folly library](https://github.com/facebook/folly/blob/fc5e5b0b635e59366521d8ac5ca7c0d58f89e0bd/folly/lang/VectorTraits.h#L26). In GNU libstdc++, a simple type comparison can be used. While in the other two libraries where this is a template, we can implement it with a variable template partial specialization.
+# Implementation Experience # {#impl}
+This [link](https://godbolt.org/z/e5dYjdnKM) to compiler explorer provides some implementation experience for libstdc++, libc++, and MSVC STL. The implementation is straightforward.
 
-# Or Should We Change Template Argument Deduction Instead?
+Since `libc++` also shares the bit reference definition with `std::bitset<N>::reference`, inclusion of forward declaration of vector here is required, but otherwise it's the same.
+
+Please note that `libc++`'s' [definition](https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28) for `is-vector-bool-reference` also covers its standard noncompliant `__bit_const_reference` with `_LIBCPP_ABI_VERSION == 1`. Since this is already non-standard, whether it should return true for `__bit_const_reference` is left to libc++ maintainers to decide. It's not an issue for the motivating example, due to the expectation of a const ref would allow the `__bit_const_reference` to be converted to a bool.
+
+We have also implemented `is_vector_bool_reference_v` and concept `vector_bool_reference` for libstdc++, libc++, and MSVC STL in [the folly library](https://github.com/facebook/folly/blob/fc5e5b0b635e59366521d8ac5ca7c0d58f89e0bd/folly/lang/VectorTraits.h#L26).
+
+# Alternatives: Change Template Argument Deduction Instead?
 
 An alternative would be introducing some core language change to make deducing the `Alloc` parameter for the function template
 ```
