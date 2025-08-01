@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3719R0: std::is_vector_bool_reference&lt;T></title>
+  <title>P3719R1: std::is_vector_bool_reference&lt;T></title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1561,10 +1561,10 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
-  <link href="https://wg21.link/p3719r0" rel="canonical">
+  <meta content="Bikeshed version 3f621ba99, updated Mon Jul 28 15:38:36 2025 -0700" name="generator">
+  <link href="https://wg21.link/p3719r1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="227189a7258d0963167d91e1348e7cbbae71271c" name="revision">
+  <meta content="9dc615848c3a3c3d4bd61fed4d8b15edc129af56" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2088,12 +2088,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3719R0<br><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-05-21">2025-05-21</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3719R1<br><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code></h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal,
+    <time class="dt-updated" datetime="2025-07-31">2025-07-31</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="https://wg21.link/p3719r0">https://wg21.link/p3719r0</a>
+     <dd><a class="u-url" href="https://wg21.link/p3719r1">https://wg21.link/p3719r1</a>
      <dt class="editor">Author:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:i@yuxuan.ch">Yuxuan Chen</a>
      <dt>Audience:
@@ -2115,6 +2116,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#motivation"><span class="secno">2.1</span> <span class="content">Motivation</span></a>
       <li><a href="#existing"><span class="secno">2.2</span> <span class="content">Existing Practices</span></a>
       <li><a href="#proposed-solution-a-type-trait"><span class="secno">2.3</span> <span class="content">Proposed Solution: A Type Trait</span></a>
+      <li><a href="#concept"><span class="secno">2.4</span> <span class="content">Accompanying Standard Library Concept</span></a>
      </ol>
     <li><a href="#or-should-we-change-template-argument-deduction-instead"><span class="secno">3</span> <span class="content">Or Should We Change Template Argument Deduction Instead?</span></a>
     <li><a href="#impact-on-the-standard"><span class="secno">4</span> <span class="content">Impact on the standard</span></a>
@@ -2124,10 +2126,17 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <h2 class="heading settled" data-level="1" id="rev_hist"><span class="secno">1. </span><span class="content">Revision History</span><a class="self-link" href="#rev_hist"></a></h2>
    <p>R0: Initial version</p>
+   <p>R1: Added concept, and wording.</p>
    <h2 class="heading settled" data-level="2" id="intro"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
-    This paper proposes to add a new type trait <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> that exposes the previously exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> in [vector.bool.pspc]/8 to <code class="highlight"><c- o>&lt;</c-><c- n>type_traits</c-><c- o>></c-></code>. The trait <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>value</c-></code> evaluates to true if and only if <code class="highlight"><c- n>T</c-></code> denotes the type <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-></code> for some type <code class="highlight"><c- n>Alloc</c-></code> and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c-></code> is not a program-defined specialization. 
+   
+This paper proposes to add a new type trait <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> that exposes the previously exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> in [vector.bool.pspc]/8 to <code class="highlight"><c- o>&lt;</c-><c- n>type_traits</c-><c- o>></c-></code>. The trait <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>value</c-></code> evaluates to true if and only if <code class="highlight"><c- n>T</c-></code> denotes the type <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>>::</c-><c- n>reference</c-></code> for some type <code class="highlight"><c- n>Alloc</c-></code> and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- p>,</c-> <c- n>Alloc</c-><c- o>></c-></code> is not a program-defined specialization.
+
+
    <h3 class="heading settled" data-level="2.1" id="motivation"><span class="secno">2.1. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h3>
-    This new trait is intended to help code like this 
+   
+This new trait is intended to help code like this
+
+
 <pre class="language-cpp highlight"><c- c1>// Illustration only, library may contain many overloads for `read`</c->
 <c- b>void</c-> <c- nf>read</c-><c- p>(</c-><c- b>bool</c-><c- o>&amp;</c-> <c- n>b</c-><c- p>);</c->
 <c- b>void</c-> <c- nf>read</c-><c- p>(</c-><c- b>int</c-><c- o>&amp;</c-> <c- n>b</c-><c- p>);</c->
@@ -2161,13 +2170,27 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 </pre>
    <p>This <a href="https://godbolt.org/z/e5dYjdnKM">link</a> to compiler explorer provides some implementation experience for libstdc++, libc++, and MSVC STL. The implementation is straightforward.</p>
    <p>Since <code class="highlight"><c- n>libc</c-><c- o>++</c-></code> also shares the bit reference definition with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>bitset</c-><c- o>&lt;</c-><c- n>N</c-><c- o>>::</c-><c- n>reference</c-></code>, inclusion of forward declaration of vector here is required, but otherwise it’s the same.</p>
-   <p>Please note that <code class="highlight"><c- n>libc</c-><c- o>++</c-></code><a class="property css" data-link-type="property">s</a> <a href="https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28">definition</a> for <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> also covers its standard noncompliant <code class="highlight"><c- n>__bit_const_reference</c-></code> with <code class="highlight"><c- n>_LIBCPP_ABI_VERSION</c-> <c- o>==</c-> <c- mi>1</c-></code>. Since this is already non-standard, whether it should return true for <code class="highlight"><c- n>__bit_const_reference</c-></code> is left to libc++ maintainers to decide. It’s not an issue for the motivating example, due to the expectation of a const ref would allow the <code class="highlight"><c- n>__bit_const_reference</c-></code> to be converted to a bool.</p>
-   <p>With such a type trait, we can define the overload in the form of</p>
+   <p>Please note that <code class="highlight"><c- n>libc</c-><c- o>++</c-></code><u class="property link-error" data-lt="s" title="LINK ERROR: No &apos;property&apos; refs found for &apos;s&apos;.">s</u> <a href="https://github.com/llvm/llvm-project/blob/2523a8358ab9526a46f825fd94cc8a5d018f5ff7/libcxx/include/__vector/vector_bool_formatter.h#L28">definition</a> for <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> also covers its standard noncompliant <code class="highlight"><c- n>__bit_const_reference</c-></code> with <code class="highlight"><c- n>_LIBCPP_ABI_VERSION</c-> <c- o>==</c-> <c- mi>1</c-></code>. Since this is already non-standard, whether it should return true for <code class="highlight"><c- n>__bit_const_reference</c-></code> is left to libc++ maintainers to decide. It’s not an issue for the motivating example, due to the expectation of a const ref would allow the <code class="highlight"><c- n>__bit_const_reference</c-></code> to be converted to a bool.</p>
+   <p>With such a type trait, we can declare the overload in the form of</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>BitReference</c-><c- o>></c->
     <c- k>requires</c-> <c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference_v</c-><c- o>&lt;</c-><c- n>BitReference</c-><c- o>></c->
 <c- b>void</c-> <c- n>read</c-><c- p>(</c-><c- n>BitReference</c-> <c- n>b</c-><c- p>);</c->
 </pre>
    <p>And this works as expected.</p>
+   <h3 class="heading settled" data-level="2.4" id="concept"><span class="secno">2.4. </span><span class="content">Accompanying Standard Library Concept</span><a class="self-link" href="#concept"></a></h3>
+   <p>With C++20 style concepts, we can define a standard library concept like the follows:</p>
+<pre class="language-cpp highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
+
+<c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>T</c-><c- o>></c->
+<c- k>concept</c-> <c- nc>vector_bool_reference</c-> <c- o>=</c-> <c- n>is_vector_bool_reference_v</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>;</c->
+
+<c- p>}</c->
+</pre>
+   <p>With the concept, we can declare the overload in the form of an implicit function template:</p>
+<pre class="highlight"><c- b>void</c-> <c- nf>read</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>vector_bool_reference</c-> <c- k>auto</c-> <c- n>b</c-><c- p>)</c-> <c- p>{</c->
+  <c- n>b</c-> <c- o>=</c-> true<c- p>;</c->
+<c- p>}</c->
+</pre>
    <h2 class="heading settled" data-level="3" id="or-should-we-change-template-argument-deduction-instead"><span class="secno">3. </span><span class="content">Or Should We Change Template Argument Deduction Instead?</span><a class="self-link" href="#or-should-we-change-template-argument-deduction-instead"></a></h2>
    <p>An alternative would be introducing some core language change to make deducing the <code class="highlight"><c- n>Alloc</c-></code> parameter for the function template</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>Alloc</c-><c- o>></c->
@@ -2177,11 +2200,67 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="heading settled" data-level="4" id="impact-on-the-standard"><span class="secno">4. </span><span class="content">Impact on the standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
    <p>This paper proposes a library only change that shouldn’t impact the core language. Since the standard already depends on the exposition-only constant <code class="highlight"><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></code> we can make the formatter use this type trait to constrain the template specialization instead.</p>
    <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Proposed Wording Changes</span><a class="self-link" href="#wording"></a></h2>
-   <p>TODO: Make changes to</p>
-   <p>[meta.type.synop]</p>
-   <p>[meta.unary.prop]</p>
-   <p>[vector.bool.pspc]/8</p>
-   <p>[vector.bool.fmt]</p>
+   <p>Edit [<strong>meta.type.synop</strong>] as follows:</p>
+   <blockquote>
+<pre class="highlight"><code><c- c1>// [meta.unary.prop], type properties</c->
+<c- p>...</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>U</c-><c- o>></c-> <c- k>struct</c-> <c- nc>reference_constructs_from_temporary</c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>U</c-><c- o>></c-> <c- k>struct</c-> <c- nc>reference_converts_from_temporary</c-><c- p>;</c->
+<ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>struct</c-> <c- nc>is_vector_bool_reference</c-><c- p>;</c-></ins>
+
+<c- c1>// [meta.unary.prop.query], type property queries</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>struct</c-> <c- nc>alignment_of</c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>struct</c-> <c- nc>rank</c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- b>unsigned</c-> <c- n>I</c-> <c- o>=</c-> <c- mi>0</c-><c- o>></c-> <c- k>struct</c-> <c- nc>extent</c-><c- p>;</c->
+
+</code></pre>
+   </blockquote>
+   <blockquote>
+<pre class="highlight"><code><c- c1>// [meta.unary.prop], type properties</c->
+<c- p>...</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>U</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>reference_constructs_from_temporary_v</c->
+    <c- o>=</c-> <c- n>reference_constructs_from_temporary</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>U</c-><c- o>>::</c-><c- n>value</c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>U</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>reference_converts_from_temporary_v</c->
+    <c- o>=</c-> <c- n>reference_converts_from_temporary</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>U</c-><c- o>>::</c-><c- n>value</c-><c- p>;</c->
+<ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>is_vector_bool_reference_v</c->
+    <c- o>=</c-> <c- n>is_vector_bool_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>value</c-><c- p>;</c-></ins>
+
+<c- c1>// [meta.unary.prop.query], type property queries</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>alignment_of_v</c-> <c- o>=</c-> <c- n>alignment_of</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>value</c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>rank_v</c-> <c- o>=</c-> <c- n>rank</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>value</c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- b>unsigned</c-> <c- n>I</c-> <c- o>=</c-> <c- mi>0</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- b>size_t</c-> <c- n>extent_v</c-> <c- o>=</c-> <c- n>extent</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>I</c-><c- o>>::</c-><c- n>value</c-><c- p>;</c->
+</code></pre>
+   </blockquote>
+   <p>Append an entry to the table in [<strong>meta.unary.prop</strong>]</p>
+   <ins></ins>
+   <table>
+    <tbody>
+     <tr>
+      <td>template &lt;class T><br>struct is_vector_bool_reference;
+      <td>Evaluates to true if T denotes the type vector&lt;bool, Alloc>::reference <br>for some type Alloc and vector&lt;bool, Alloc> is not a program-defined specialization.
+   </table>
+   <p>Edit [<strong>vector.bool.pspc</strong>] as follows</p>
+   <blockquote>
+<pre class="highlight"><code><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- b>bool</c-> <del><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></del><ins><c- n>is_vector_bool_reference_v</c-></ins> <c- o>=</c-> <c- n>see</c-> <c- n>below</c-><c- p>;</c->
+</code></pre>
+    <p>The expression <code class="highlight"><del><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></del><ins><c- n>is_vector_bool_reference_v</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></ins></code> is true if T denotes the type vector&lt;bool, Alloc>::reference for some type Alloc and vector&lt;bool, Alloc> is not a program-defined specialization.</p>
+   </blockquote>
+   <p>Edit [<strong>vector.bool.fmt</strong>] as follows</p>
+   <blockquote>
+<pre class="highlight"><code><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
+    <c- k>requires</c-> <del><c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-></del><ins><c- n>std</c-><c- o>::</c-><c- n>is_vector_bool_reference_v</c-></ins><c- o>&lt;</c-><c- n>T</c-><c- o>></c->
+  <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
+    <c- p>...</c->
+  <c- p>};</c->
+</code></pre>
+   </blockquote>
   </main>
 <script>
 (function() {

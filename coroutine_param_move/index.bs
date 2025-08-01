@@ -1,0 +1,26 @@
+<pre class='metadata'>
+Title: Coroutine Parameter Copy Should Permit Trivial Relocation and Elision
+H1: Coroutine Parameter Copy Should Permit Trivial Relocation and Elision
+Shortname: PAPER_NUMBER
+Revision: 0
+Status: D
+Group: WG21
+Audience: EWGI, EWG
+Editor: Yuxuan Chen, yuxuanchen1997@outlook.com
+URL: https://wg21.link/tbd
+Markup Shorthands: markdown yes
+Toggle Diffs: no
+No Abstract: yes
+Default Biblio Display: inline
+Default Highlight: c++
+</pre>
+
+# Revision History # {#rev_hist}
+R0 November 2024: Initial version.
+
+# Introduction # {#intro}
+Coroutines as of today, requires its parameters to be copied into the coroutine through a move constructor as stated in https://eel.is/c++draft/dcl.fct.def.coroutine#13.
+
+However, I believe that the standard should relax this requirement by permitting elision of this move. With the trivial relocation proposal in mind, the standard should also permit trivially relocating the parameters. 
+
+
